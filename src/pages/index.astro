@@ -1,0 +1,280 @@
+---
+import { Image } from "astro:assets";
+import "../styles/global.css";
+import { PILLARS, SVC, EXTRAS, HOW, REVIEWS, PROJECT_OPTIONS } from "../data/content";
+import { SITE, FORM_ENDPOINT } from "../data/site";
+
+// Absolute URLs only work once `site` is set in astro.config.mjs (see TODO there).
+const ogImage = Astro.site ? new URL("/logo.png", Astro.site).href : "/logo.png";
+
+// LocalBusiness structured data. Only facts from the handoff are used here.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "GeneralContractor",
+  name: SITE.name,
+  telephone: "+1-604-210-2710",
+  email: SITE.email,
+  areaServed: SITE.areas.map((name) => ({ "@type": "City", name })),
+  address: { "@type": "PostalAddress", addressLocality: "Vancouver", addressRegion: "BC", addressCountry: "CA" },
+  openingHours: "Mo-Sa 07:00-17:00",
+  sameAs: Object.values(SITE.social),
+  ...(Astro.site ? { url: Astro.site.href, image: ogImage } : {}),
+};
+
+let heroIndex = 0;
+const heroDelay = () => `animation-delay:${(0.1 + heroIndex++ * 0.1).toFixed(1)}s`;
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{SITE.title}</title>
+  <meta name="description" content={SITE.description} />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <meta name="theme-color" content="#0C0E0C" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content={SITE.title} />
+  <meta property="og:description" content={SITE.description} />
+  <meta property="og:image" content={ogImage} />
+  <meta name="twitter:card" content="summary" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script is:inline>document.documentElement.classList.add("js");</script>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+</head>
+<body>
+<div id="top" class="page">
+
+  <header class="site-header">
+    <div class="wrap">
+      <a href="#top" class="brand">
+        <img src="/logo.png" alt="" width="40" height="40" />
+        <span class="brand-text"><span class="brand-name">Vanreno</span><span class="brand-sub">GENERAL CONTRACTORS LTD.</span></span>
+      </a>
+      <nav class="nav" aria-label="Main">
+        <a href="#services">Services</a>
+        <a href="#how">How we work</a>
+        <a href="#reviews">Reviews</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <a href={SITE.phoneHref} class="header-call">{SITE.phone}</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-inner">
+        <p data-hero style={heroDelay()} class="hero-areas">Vancouver · Burnaby · Coquitlam · North &amp; West Vancouver</p>
+        <h1 data-hero style={heroDelay()}>No middleman.<br /><span class="green">No delays.</span></h1>
+        <div class="hero-row">
+          <p data-hero style={heroDelay()} class="hero-lead">Bathroom, kitchen and basement renovations, home additions and general contracting. Our own team manages the whole project from start to finish, at reasonable prices with a price match policy.</p>
+          <div data-hero style={heroDelay()} class="hero-ctas">
+            <a href="#contact" class="btn btn-green">Request a free consultation</a>
+            <a href="#services" class="btn btn-outline">Our services</a>
+          </div>
+        </div>
+      </div>
+      <div class="pillars-band">
+        <div class="wrap pillars">
+          {PILLARS.map(([t, d], i) => (
+            <div data-hero style={heroDelay()} class="pillar">
+              <span class="pillar-bar" style={`animation-delay:${(0.7 + i * 0.12).toFixed(2)}s`}></span>
+              <span class="pillar-title">{t}</span>
+              <span class="pillar-text">{d}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section id="services" class="wrap section">
+      <div data-reveal class="svc-head">
+        <h2 class="h2">What are you<br />planning?</h2>
+        <p>Pick a project to see what’s included.</p>
+      </div>
+      <div data-reveal class="tabs" role="tablist" aria-label="Projects">
+        {SVC.map((s, i) => (
+          <button type="button" class="tab" role="tab" id={`tab-${i}`} aria-controls={`panel-${i}`} aria-selected={i === 0 ? "true" : "false"} tabindex={i === 0 ? 0 : -1}>{s.k}</button>
+        ))}
+      </div>
+      {SVC.map((s, i) => (
+        <div class="svc-panel" role="tabpanel" id={`panel-${i}`} aria-labelledby={`tab-${i}`} hidden={i !== 0}>
+          <div class="svc-img">
+            <Image src={s.img} alt={s.t} widths={[400, 600]} sizes="(min-width: 1000px) 50vw, 100vw" format="webp" loading="lazy" />
+          </div>
+          <div class="svc-body">
+            <h3>{s.t}</h3>
+            <p>{s.d}</p>
+            <ul class="svc-list">
+              {s.inc.map((x) => <li>{x}</li>)}
+            </ul>
+            <a href="#contact" class="svc-cta">Get a quote for this</a>
+          </div>
+        </div>
+      ))}
+      <div data-reveal class="extras">
+        <span class="extras-label">Also:</span>
+        {EXTRAS.map((e) => <span class="extra">{e}</span>)}
+      </div>
+    </section>
+
+    <section id="how" class="how">
+      <div class="wrap section how-inner">
+        <h2 data-reveal class="h2-sm">One team, start to finish.</h2>
+        <div class="how-col">
+          <p data-reveal class="how-lead">Throughout your project there are no middlemen. Our team manages the entire process, so communication stays clear and the work gets done right.</p>
+          <div class="how-steps">
+            {HOW.map(([t, d]) => (
+              <div data-reveal class="how-step">
+                <strong>{t}</strong>
+                <span>{d}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="reviews" class="reviews">
+      <div class="wrap section">
+        <h2 data-reveal class="h2">What clients say<br /><span class="green">about Amin’s team.</span></h2>
+        <div class="review-cols">
+          {REVIEWS.map(([q, n, c], i) => (
+            <figure data-reveal class:list={["review", { "is-featured": i === 0 }]}>
+              <blockquote>“{q}”</blockquote>
+              <figcaption><strong>{n}</strong><span>{c}</span></figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="wrap section contact">
+      <div class="contact-info">
+        <h2 data-reveal class="h2-sm">Get a quick quote.</h2>
+        <p data-reveal class="contact-lead">Request a free consultation. We take the steps needed to meet your needs and get the job done right.</p>
+        <a data-reveal href={SITE.phoneHref} class="contact-phone">{SITE.phone}</a>
+        <a data-reveal href={`mailto:${SITE.email}`} class="contact-email">{SITE.email}</a>
+        <div data-reveal class="contact-facts">
+          <div><strong>Hours</strong><span>Mon to Sat, 7am to 5pm</span></div>
+          <div><strong>Office</strong><span>Vancouver, BC</span></div>
+        </div>
+        <div data-reveal class="social">
+          <a href={SITE.social.instagram} target="_blank" rel="noopener">Instagram</a><a href={SITE.social.facebook} target="_blank" rel="noopener">Facebook</a><a href={SITE.social.youtube} target="_blank" rel="noopener">YouTube</a><a href={SITE.social.linkedin} target="_blank" rel="noopener">LinkedIn</a>
+        </div>
+      </div>
+      <div>
+        <form data-reveal id="quote-form" class="quote-form" data-endpoint={FORM_ENDPOINT} method="post" action={FORM_ENDPOINT || undefined}>
+          <div class="form-grid">
+            <label class="field">Name<input name="name" required autocomplete="name" /></label>
+            <label class="field">Phone<input name="phone" required type="tel" autocomplete="tel" /></label>
+            <label class="field">Email<input name="email" type="email" autocomplete="email" /></label>
+            <label class="field">Project<select name="project">{PROJECT_OPTIONS.map((o) => <option>{o}</option>)}</select></label>
+          </div>
+          <label class="field">Message<textarea name="message" rows="5"></textarea></label>
+          <p class="form-error" role="alert" hidden>Sorry, something went wrong. Please call us at {SITE.phone}.</p>
+          <button type="submit" class="btn-submit">Send request</button>
+        </form>
+        <div id="form-thanks" class="form-thanks" role="status" hidden>Thanks. We’ll be in touch to set up your consultation.</div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <span class="footer-brand"><img src="/logo.png" alt="" width="32" height="32" loading="lazy" />Vanreno General Contractors Ltd.</span>
+      <span>Price match policy · Service guarantee · Vancouver, BC</span>
+      <div class="footer-legal">
+        <span>© 2026 Vanreno General Contractors Ltd.</span>
+        <a href="https://backpackdigitalmedia.com" target="_blank" rel="noopener">Powered by Backpack Digital Media</a>
+      </div>
+    </div>
+  </footer>
+
+  <div class="mobile-bar">
+    <a href={SITE.phoneHref} class="call">Call</a>
+    <a href="#contact" class="quote">Free consultation</a>
+  </div>
+</div>
+
+<script>
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---- Project picker tabs ----
+  const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>(".tab"));
+  const panels = Array.from(document.querySelectorAll<HTMLElement>(".svc-panel"));
+  function selectTab(index: number) {
+    tabs.forEach((tab, i) => {
+      const on = i === index;
+      tab.setAttribute("aria-selected", String(on));
+      tab.tabIndex = on ? 0 : -1;
+      panels[i].hidden = !on;
+      panels[i].classList.toggle("is-anim", on && !reduce);
+    });
+  }
+  tabs.forEach((tab, i) => {
+    tab.addEventListener("click", () => selectTab(i));
+    tab.addEventListener("keydown", (e) => {
+      const step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+      if (!step) return;
+      const next = (i + step + tabs.length) % tabs.length;
+      selectTab(next);
+      tabs[next].focus();
+    });
+  });
+
+  // ---- Scroll reveal ----
+  // Elements are visible by default. We only hide them here (with JS on and motion allowed).
+  if (!reduce && "IntersectionObserver" in window) {
+    const els = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]"));
+    let batch = 0;
+    let batchTimer = 0;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target as HTMLElement;
+        io.unobserve(el);
+        el.style.transitionDelay = `${batch++ * 0.08}s`;
+        el.classList.add("reveal-in");
+        el.classList.remove("reveal-pending");
+      });
+      clearTimeout(batchTimer);
+      batchTimer = window.setTimeout(() => (batch = 0), 100);
+    }, { rootMargin: "0px 0px -8% 0px" });
+    els.forEach((el) => {
+      if (el.getBoundingClientRect().top < window.innerHeight) return; // already on screen
+      el.classList.add("reveal-pending");
+      io.observe(el);
+    });
+  }
+
+  // ---- Quote form ----
+  const form = document.getElementById("quote-form") as HTMLFormElement | null;
+  const thanks = document.getElementById("form-thanks");
+  if (form && thanks) {
+    const endpoint = form.dataset.endpoint || "";
+    const error = form.querySelector<HTMLElement>(".form-error");
+    const button = form.querySelector<HTMLButtonElement>("button[type=submit]");
+    const showThanks = () => { form.hidden = true; thanks.hidden = false; };
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!endpoint) { showThanks(); return; } // demo mode: no endpoint set yet
+      if (error) error.hidden = true;
+      if (button) button.disabled = true;
+      try {
+        const res = await fetch(endpoint, { method: "POST", body: new FormData(form), headers: { Accept: "application/json" } });
+        if (!res.ok) throw new Error(String(res.status));
+        showThanks();
+      } catch {
+        if (error) error.hidden = false;
+      } finally {
+        if (button) button.disabled = false;
+      }
+    });
+  }
+</script>
+</body>
+</html>
